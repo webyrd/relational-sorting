@@ -38,6 +38,7 @@
          (== `(s ,res) out)
          (addo n1-1 n2 res))))))
 
+
 (test "<=o-1"
   (run* (q) (<=o 'z 'z))
   '(_.0))
@@ -88,7 +89,8 @@
          (== `(,a . ,d) in)
          (nehal-sorto d res)
          (inserto a res out))))))
-  
+
+
 ;; original inserto
 (define inserto
   (lambda (x ls out)
@@ -98,12 +100,12 @@
       ((fresh (a d)
          (== `(,a . ,d) ls)
          (conde
-           ((<=o x a)
-            (== `(,x . ,ls) out))
+           ((== `(,x . ,ls) out)
+            (<=o x a))
            ((=/= x a)
-            (<=o a x)
             (fresh (res)
               (== `(,a . ,res) out)
+              (<=o a x)
               (inserto x d res)))))))))
 
 (test "nehal-sorto-orginal-inserto-1"
@@ -115,16 +117,18 @@
   '((z (s z) (s (s (s z))))))
 
 ;; alas, run 7 diverges
+;;
+;; run* fails finitely if the 'inserto' call comes before the
+;; 'nehal-sorto' call in 'nehal-sorto'.  However,
+;; 'nehal-sorto-orginal-inserto-2' then diverges.
 (test "nehal-sorto-orginal-inserto-3"
   (run 6 (q) (nehal-sorto q '(z (s z) (s (s (s z))))))
   '(((s z) z (s (s (s z))))
-    (z (s z) (s (s (s z))))
     ((s (s (s z))) z (s z))
+    (z (s z) (s (s (s z))))
     ((s z) (s (s (s z))) z)
     ((s (s (s z))) (s z) z)
     (z (s (s (s z))) (s z))))
-
-
 
 
 ;; Orchid's inserto
